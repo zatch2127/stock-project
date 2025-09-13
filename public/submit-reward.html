@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Reward</title>
+    <style>
+        body { font-family: sans-serif; margin: 2em; background-color: #f4f4f9; color: #333; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { color: #333; border-bottom: 2px solid #007bff; padding-bottom: 10px; }
+        .endpoint { border: 1px solid #ddd; padding: 15px; margin-bottom: 20px; border-radius: 5px; background: #fafafa; }
+        input[type="text"] { width: calc(100% - 22px); padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { padding: 10px 15px; border: none; background-color: #007bff; color: white; border-radius: 4px; cursor: pointer; font-size: 16px; }
+        button:hover { background-color: #0056b3; }
+        pre { background-color: #eee; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-wrap: break-word; }
+        a { color: #007bff; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/">Home</a>
+        <h1>Submit a Reward</h1>
+        <div class="endpoint">
+            <p><code>POST /reward</code></p>
+            <input type="text" id="userId" placeholder="User ID (e.g., user123)">
+            <input type="text" id="stockSymbol" placeholder="Stock Symbol (e.g., RELIANCE)">
+            <input type="number" id="shares" placeholder="Shares (e.g., 10.5)" step="any">
+            <input type="text" id="idempotencyKey" placeholder="Idempotency Key (e.g., UUID)">
+            <button onclick="generateIdempotencyKey()">Generate Key</button>
+            <button onclick="createReward()">Create Reward</button>
+        </div>
+        <h2>API Response</h2>
+        <pre id="response">API response will be shown here.</pre>
+    </div>
+
+    <script>
+        const responseArea = document.getElementById('response');
+
+        function generateIdempotencyKey() {
+            document.getElementById('idempotencyKey').value = crypto.randomUUID();
+        }
+
+        async function createReward() {
+            const userId = document.getElementById('userId').value;
+            const stockSymbol = document.getElementById('stockSymbol').value;
+            const shares = document.getElementById('shares').value; // Changed from quantity to shares
+            const idempotencyKey = document.getElementById('idempotencyKey').value;
+
+            if (!userId || !stockSymbol || !shares || !idempotencyKey) {
+                responseArea.textContent = 'Please fill in all fields.';
+                return;
+            }
+
+            const parsedShares = parseFloat(shares);
+            if (isNaN(parsedShares) || parsedShares <= 0) {
+                responseArea.textContent = 'Shares must be a positive number.';
+                return;
+            }
+
+            const dataToSend = { userId, stockSymbol, shares: parsedShares, idempotencyKey };
+            console.log('Data being sent from client:', dataToSend); // Log data before sending
+
+            try {
+                const response = await fetch('/api/rewards', { // Changed endpoint to /api/rewards
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(dataToSend)
+                });
+                const data = await response.json();
+                responseArea.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                responseArea.textContent = `Error: ${error.message}`;
+            }
+        }
+    </script>
+</body>
+</html>
