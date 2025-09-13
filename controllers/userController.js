@@ -1,13 +1,11 @@
 const LedgerEntry = require("../models/ledgerEntry");
-
 const RewardEvent = require("../models/rewardEvent");
-const priceService = require("../services/priceService"); // Import priceService
+const priceService = require("../services/priceService");
 
 exports.getUserStats = async (req, res) => {
   try {
     const { userId } = req.params;
 
-    // Total shares rewarded today (grouped by stock symbol)
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -30,12 +28,11 @@ exports.getUserStats = async (req, res) => {
         $project: {
           _id: 0,
           stockSymbol: "$_id",
-          totalShares: { $toString: "$totalShares" }, // Convert Decimal128 to string
+          totalShares: { $toString: "$totalShares" },
         },
       },
     ]);
 
-    // Current INR value of the user's portfolio
     const userHoldings = await RewardEvent.aggregate([
       {
         $match: { userId },
@@ -60,7 +57,6 @@ exports.getUserStats = async (req, res) => {
 
     for (const holding of userHoldings) {
       const stockSymbol = holding.stockSymbol;
-      // Ensure stockSymbol is not null or undefined before proceeding
       if (!stockSymbol) {
         console.warn(
           `Skipping holding with null stockSymbol for userId: ${userId}`
@@ -68,7 +64,7 @@ exports.getUserStats = async (req, res) => {
         continue;
       }
 
-      const shares = parseFloat(holding.totalShares.toString()); // Convert Decimal128 to float
+      const shares = parseFloat(holding.totalShares.toString());
 
       const currentPrice = await priceService.getLatestPrice(stockSymbol);
       const price = parseFloat(currentPrice);
@@ -89,7 +85,7 @@ exports.getUserStats = async (req, res) => {
       userId,
       todayRewardsByStock,
       currentPortfolioValue: currentPortfolioValue.toFixed(4),
-      portfolioDetails, // Detailed portfolio
+      portfolioDetails,
     });
   } catch (error) {
     console.error("Error fetching user stats:", error);
@@ -105,7 +101,6 @@ exports.getUserHistoricalInr = async (req, res) => {
   try {
     console.log(`Getting historical INR for user: ${userId}`);
 
-    // Get reward events for the user
     const rewardEvents = await RewardEvent.find({
       userId: userId,
       status: "ACTIVE",
@@ -123,7 +118,6 @@ exports.getUserHistoricalInr = async (req, res) => {
       });
     }
 
-    // Group events by date and calculate daily totals
     const dailyTotals = {};
 
     for (const event of rewardEvents) {
@@ -140,7 +134,6 @@ exports.getUserHistoricalInr = async (req, res) => {
         __v: event.__v,
       });
 
-      // Safely handle timestamp
       let eventTimestamp;
       if (typeof event.timestamp === "string") {
         eventTimestamp = new Date(event.timestamp);
@@ -148,17 +141,16 @@ exports.getUserHistoricalInr = async (req, res) => {
         eventTimestamp = new Date(event.timestamp.getTime());
       } else {
         console.error("Invalid timestamp format:", event.timestamp);
-        continue; // Skip this event
+        continue;
       }
 
-      // Check if the date is valid
       if (isNaN(eventTimestamp.getTime())) {
         console.error(
           "Invalid timestamp for event:",
           event._id,
           event.timestamp
         );
-        continue; // Skip this event
+        continue;
       }
 
       const eventDate = new Date(eventTimestamp);
@@ -170,10 +162,8 @@ exports.getUserHistoricalInr = async (req, res) => {
         dailyTotals[dateKey] = 0;
       }
 
-      // Get price for this date
       let price;
       try {
-        // Try to get historical price first
         const StockPriceHistory = require("../models/stockPriceHistory");
         const historicalPrice = await StockPriceHistory.findOne({
           stockSymbol: event.stockSymbol,
@@ -186,7 +176,6 @@ exports.getUserHistoricalInr = async (req, res) => {
             `Found historical price for ${event.stockSymbol}: ₹${price}`
           );
         } else {
-          // Fallback to current price
           price = await priceService.getLatestPrice(event.stockSymbol);
           console.log(
             `No historical price found for ${event.stockSymbol} on or before ${eventTimestamp}`
@@ -200,7 +189,7 @@ exports.getUserHistoricalInr = async (req, res) => {
           `Error getting price for ${event.stockSymbol}:`,
           priceError.message
         );
-        continue; // Skip this event
+        continue;
       }
 
       if (price && !isNaN(price) && price > 0) {
@@ -214,7 +203,6 @@ exports.getUserHistoricalInr = async (req, res) => {
       }
     }
 
-    // Convert to array format
     const result = Object.keys(dailyTotals)
       .map((date) => ({
         date: date,

@@ -21,7 +21,7 @@ mongoose.connect(process.env.MONGO_URI, {
 
 
 
-// Routes will be added here
+
 const rewardsRouter = require('./routes/rewards');
 app.use('/api/rewards', rewardsRouter);
 

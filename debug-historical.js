@@ -57,7 +57,7 @@ async function debugHistorical() {
         console.log(`❌ No price found for ${event.stockSymbol}`);
       }
 
-      console.log(""); // Empty line
+      console.log(""); 
     }
 
     console.log("✅ Debug complete!");

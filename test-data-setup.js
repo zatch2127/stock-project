@@ -13,12 +13,12 @@ async function setupTestData() {
   try {
     console.log("Setting up test data...");
 
-    // Clear existing data
+    
     await RewardEvent.deleteMany({});
     await StockPriceHistory.deleteMany({});
     console.log("Cleared existing data");
 
-    // Create some sample reward events for user1
+  
     const sampleRewards = [
       {
         userId: "user1",
@@ -54,7 +54,7 @@ async function setupTestData() {
       },
     ];
 
-    // Create reward events
+  
     for (const reward of sampleRewards) {
       await RewardEvent.create(reward);
       console.log(
@@ -73,10 +73,9 @@ async function setupTestData() {
 
     for (const symbol of stockSymbols) {
       for (const date of dates) {
-        // Generate a realistic price with some variation
         const basePrice =
           symbol === "RELIANCE" ? 2500 : symbol === "TCS" ? 3500 : 1500;
-        const variation = (Math.random() - 0.5) * 0.1; // ±5% variation
+        const variation = (Math.random() - 0.5) * 0.1; 
         const price = basePrice * (1 + variation);
 
         await StockPriceHistory.create({
@@ -88,7 +87,6 @@ async function setupTestData() {
       console.log(`Created price history for ${symbol}`);
     }
 
-    // Also create some current prices
     for (const symbol of stockSymbols) {
       await priceService.getLatestPrice(symbol);
       console.log(`Created current price for ${symbol}`);

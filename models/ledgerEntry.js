@@ -93,8 +93,6 @@ const ledgerEntrySchema = new Schema(
   }
 );
 
-// Ensure that for a given transaction, the debits and credits balance
-// This is a simplified check. A more robust system might use a separate transactions collection.
 ledgerEntrySchema.statics.validateTransaction = async function (transactionId) {
   const entries = await this.find({ transactionId });
   const balance = entries.reduce((acc, entry) => {
@@ -105,7 +103,7 @@ ledgerEntrySchema.statics.validateTransaction = async function (transactionId) {
     return acc + (entry.entryType === "DEBIT" ? amount : -amount);
   }, 0);
 
-  // Using a small epsilon for floating point comparison
+ 
   return Math.abs(balance) < 0.0001;
 };
 

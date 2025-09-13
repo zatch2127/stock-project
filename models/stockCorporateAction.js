@@ -32,7 +32,7 @@ const stockCorporateActionSchema = new Schema(
       required: true,
     },
     details: {
-      // For stock split: { from: 1, to: 2 } means 1:2 split
+      
       from: {
         type: Number,
         required: function () {
@@ -45,14 +45,14 @@ const stockCorporateActionSchema = new Schema(
           return ["STOCK_SPLIT", "BONUS_ISSUE"].includes(this.actionType);
         },
       },
-      // For dividend: amount per share
+
       dividendAmount: {
         type: Schema.Types.Decimal128,
         required: function () {
           return this.actionType === "STOCK_DIVIDEND";
         },
       },
-      // For merger: new stock symbol
+
       newStockSymbol: {
         type: String,
         uppercase: true,
@@ -61,14 +61,14 @@ const stockCorporateActionSchema = new Schema(
           return this.actionType === "MERGER";
         },
       },
-      // For merger: exchange ratio
+
       exchangeRatio: {
         type: Schema.Types.Decimal128,
         required: function () {
           return this.actionType === "MERGER";
         },
       },
-      // For delisting: final price
+ 
       finalPrice: {
         type: Schema.Types.Decimal128,
         required: function () {
@@ -97,7 +97,7 @@ const stockCorporateActionSchema = new Schema(
   }
 );
 
-// Index for efficient queries
+
 stockCorporateActionSchema.index({ stockSymbol: 1, effectiveDate: 1 });
 stockCorporateActionSchema.index({ actionType: 1, status: 1 });
 

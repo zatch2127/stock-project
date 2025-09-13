@@ -43,7 +43,7 @@
         async function createReward() {
             const userId = document.getElementById('userId').value;
             const stockSymbol = document.getElementById('stockSymbol').value;
-            const shares = document.getElementById('shares').value; // Changed from quantity to shares
+            const shares = document.getElementById('shares').value; 
             const idempotencyKey = document.getElementById('idempotencyKey').value;
 
             if (!userId || !stockSymbol || !shares || !idempotencyKey) {
@@ -58,10 +58,10 @@
             }
 
             const dataToSend = { userId, stockSymbol, shares: parsedShares, idempotencyKey };
-            console.log('Data being sent from client:', dataToSend); // Log data before sending
+            console.log('Data being sent from client:', dataToSend); 
 
             try {
-                const response = await fetch('/api/rewards', { // Changed endpoint to /api/rewards
+                const response = await fetch('/api/rewards', { 
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
